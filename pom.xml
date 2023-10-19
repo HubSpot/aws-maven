@@ -170,6 +170,10 @@
                                 <relocation>
                                     <pattern>org.apache</pattern>
                                     <shadedPattern>${project.groupId}.shaded.org.apache</shadedPattern>
+                                    <includes>
+                                        <include>org.apache.commons.*</include>
+                                        <include>org.apache.http.*</include>
+                                    </includes>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.joda</pattern>
