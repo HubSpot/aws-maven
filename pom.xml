@@ -182,6 +182,14 @@
                                     <pattern>javax.annotation</pattern>
                                     <shadedPattern>${project.groupId}.shaded.javax.annotation</shadedPattern>
                                 </relocation>
+                                <relocation>
+                                    <pattern>software.amazon</pattern>
+                                    <shadedPattern>${project.groupId}.shaded.software.amazon</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.checkerframework</pattern>
+                                    <shadedPattern>${project.groupId}.shaded.org.checkerframework</shadedPattern>
+                                </relocation>
                             </relocations>
                         </configuration>
                     </execution>
