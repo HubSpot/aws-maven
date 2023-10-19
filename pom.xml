@@ -55,6 +55,12 @@
             <groupId>com.github.rholder</groupId>
             <artifactId>guava-retrying</artifactId>
             <version>2.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.code.findbugs</groupId>
+                    <artifactId>jsr305</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -120,8 +126,6 @@
                         </goals>
                         <configuration>
                             <shadedArtifactAttached>false</shadedArtifactAttached>
-                            <createSourcesJar>true</createSourcesJar>
-                            <shadeSourcesContent>true</shadeSourcesContent>
                             <createDependencyReducedPom>true</createDependencyReducedPom>
                             <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
                             <useBaseVersion>true</useBaseVersion>
@@ -151,44 +155,28 @@
                             </filters>
                             <relocations>
                                 <relocation>
-                                    <pattern>com.amazonaws</pattern>
-                                    <shadedPattern>${project.groupId}.shaded.com.amazonaws</shadedPattern>
+                                    <pattern>com.</pattern>
+                                    <shadedPattern>${project.groupId}.shaded.com.</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>com.fasterxml</pattern>
-                                    <shadedPattern>${project.groupId}.shaded.com.fasterxml</shadedPattern>
+                                    <pattern>org.apache.</pattern>
+                                    <shadedPattern>${project.groupId}.shaded.org.apache.</shadedPattern>
+                                    <excludes>
+                                        <exclude>org.apache.commons.logging.*</exclude>
+                                        <exclude>org.apache.maven.*</exclude>
+                                    </excludes>
                                 </relocation>
                                 <relocation>
-                                    <pattern>com.google</pattern>
-                                    <shadedPattern>${project.groupId}.shaded.com.google</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.github</pattern>
-                                    <shadedPattern>${project.groupId}.shaded.com.github</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.commons</pattern>
-                                    <shadedPattern>${project.groupId}.shaded.org.apache.commons</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.http</pattern>
-                                    <shadedPattern>${project.groupId}.shaded.org.apache.http</shadedPattern>
+                                    <pattern>org.checkerframework</pattern>
+                                    <shadedPattern>${project.groupId}.shaded.org.checkerframework</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.joda</pattern>
                                     <shadedPattern>${project.groupId}.shaded.org.joda</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>javax.annotation</pattern>
-                                    <shadedPattern>${project.groupId}.shaded.javax.annotation</shadedPattern>
-                                </relocation>
-                                <relocation>
                                     <pattern>software.amazon</pattern>
                                     <shadedPattern>${project.groupId}.shaded.software.amazon</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.checkerframework</pattern>
-                                    <shadedPattern>${project.groupId}.shaded.org.checkerframework</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
