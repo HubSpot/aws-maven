@@ -119,7 +119,6 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <minimizeJar>true</minimizeJar>
                             <shadedArtifactAttached>false</shadedArtifactAttached>
                             <createSourcesJar>true</createSourcesJar>
                             <shadeSourcesContent>true</shadeSourcesContent>
@@ -168,12 +167,12 @@
                                     <shadedPattern>${project.groupId}.shaded.com.github</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>org.apache</pattern>
-                                    <shadedPattern>${project.groupId}.shaded.org.apache</shadedPattern>
-                                    <includes>
-                                        <include>org.apache.commons.*</include>
-                                        <include>org.apache.http.*</include>
-                                    </includes>
+                                    <pattern>org.apache.commons</pattern>
+                                    <shadedPattern>${project.groupId}.shaded.org.apache.commons</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.http</pattern>
+                                    <shadedPattern>${project.groupId}.shaded.org.apache.http</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.joda</pattern>
