@@ -19,6 +19,7 @@ package org.springframework.build.aws.maven.matchers;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import org.apache.maven.wagon.events.SessionEvent;
 import org.apache.maven.wagon.events.TransferEvent;
+import org.mockito.hamcrest.MockitoHamcrest;
 
 public final class Matchers {
 
@@ -26,15 +27,15 @@ public final class Matchers {
     }
 
     public static ListObjectsRequest eq(ListObjectsRequest listObjectsRequest) {
-        return org.mockito.Matchers.argThat(new ListObjectsRequestMatcher(listObjectsRequest));
+        return MockitoHamcrest.argThat(new ListObjectsRequestMatcher(listObjectsRequest));
     }
 
     public static SessionEvent eq(SessionEvent sessionEvent) {
-        return org.mockito.Matchers.argThat(new SessionEventMatcher(sessionEvent));
+        return MockitoHamcrest.argThat(new SessionEventMatcher(sessionEvent));
     }
 
     public static TransferEvent eq(TransferEvent transferEvent) {
-        return org.mockito.Matchers.argThat(new TransferEventMatcher(transferEvent));
+        return MockitoHamcrest.argThat(new TransferEventMatcher(transferEvent));
     }
 
 }
