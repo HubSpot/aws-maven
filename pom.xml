@@ -156,27 +156,30 @@
                             <relocations>
                                 <relocation>
                                     <pattern>com.</pattern>
-                                    <shadedPattern>${project.groupId}.shaded.com.</shadedPattern>
+                                    <shadedPattern>aws_wagon.shaded.com.</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>org.apache.</pattern>
-                                    <shadedPattern>${project.groupId}.shaded.org.apache.</shadedPattern>
+                                    <pattern>org.apache.commons.</pattern>
+                                    <shadedPattern>aws_wagon.shaded.org.apache.commons.</shadedPattern>
                                     <excludes>
                                         <exclude>org.apache.commons.logging.*</exclude>
-                                        <exclude>org.apache.maven.*</exclude>
                                     </excludes>
                                 </relocation>
                                 <relocation>
+                                    <pattern>org.apache.http.</pattern>
+                                    <shadedPattern>aws_wagon.shaded.org.apache.http.</shadedPattern>
+                                </relocation>
+                                <relocation>
                                     <pattern>org.checkerframework</pattern>
-                                    <shadedPattern>${project.groupId}.shaded.org.checkerframework</shadedPattern>
+                                    <shadedPattern>aws_wagon.shaded.org.checkerframework</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.joda</pattern>
-                                    <shadedPattern>${project.groupId}.shaded.org.joda</shadedPattern>
+                                    <shadedPattern>aws_wagon.shaded.org.joda</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>software.amazon</pattern>
-                                    <shadedPattern>${project.groupId}.shaded.software.amazon</shadedPattern>
+                                    <shadedPattern>aws_wagon.shaded.software.amazon</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
