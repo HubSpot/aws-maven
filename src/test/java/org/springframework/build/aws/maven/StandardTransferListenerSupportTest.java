@@ -22,7 +22,7 @@ import org.apache.maven.wagon.events.TransferListener;
 import org.apache.maven.wagon.resource.Resource;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 
 import java.io.IOException;
 
@@ -78,7 +78,7 @@ public final class StandardTransferListenerSupportTest {
         this.transferListenerSupport.fireTransferProgress(this.resource, REQUEST_TYPE, buffer, length);
         verify(this.transferListener).transferProgress(
                 eq(new TransferEvent(this.wagon, this.resource, TransferEvent.TRANSFER_PROGRESS, REQUEST_TYPE)),
-                Matchers.eq(buffer), Matchers.eq(length));
+                ArgumentMatchers.eq(buffer), ArgumentMatchers.eq(length));
     }
 
     @Test

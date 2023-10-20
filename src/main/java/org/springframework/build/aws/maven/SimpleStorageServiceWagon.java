@@ -16,6 +16,25 @@
 
 package org.springframework.build.aws.maven;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.internal.Mimetypes;
+import com.amazonaws.services.s3.model.HeadBucketRequest;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
+import org.apache.maven.wagon.ResourceDoesNotExistException;
+import org.apache.maven.wagon.TransferFailedException;
+import org.apache.maven.wagon.authentication.AuthenticationException;
+import org.apache.maven.wagon.authentication.AuthenticationInfo;
+import org.apache.maven.wagon.authorization.AuthorizationException;
+import org.apache.maven.wagon.proxy.ProxyInfoProvider;
+import org.apache.maven.wagon.repository.Repository;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -26,26 +45,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.maven.wagon.ResourceDoesNotExistException;
-import org.apache.maven.wagon.TransferFailedException;
-import org.apache.maven.wagon.authentication.AuthenticationException;
-import org.apache.maven.wagon.authentication.AuthenticationInfo;
-import org.apache.maven.wagon.authorization.AuthorizationException;
-import org.apache.maven.wagon.proxy.ProxyInfoProvider;
-import org.apache.maven.wagon.repository.Repository;
-
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.internal.Mimetypes;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 /**
  * An implementation of the Maven Wagon interface that allows you to access the Amazon S3 service. URLs that reference
@@ -86,16 +85,18 @@ public class SimpleStorageServiceWagon extends AbstractWagon {
     protected void connectToRepository(Repository repository, AuthenticationInfo authenticationInfo,
                                        ProxyInfoProvider proxyInfoProvider) throws AuthenticationException {
         if (this.amazonS3 == null) {
-            AuthenticationInfoAWSCredentialsProviderChain credentialsProvider =
-                    new AuthenticationInfoAWSCredentialsProviderChain(authenticationInfo);
-            ClientConfiguration clientConfiguration = S3Utils.getClientConfiguration(proxyInfoProvider);
-
             this.bucketName = S3Utils.getBucketName(repository);
             this.baseDirectory = S3Utils.getBaseDirectory(repository);
 
-            this.amazonS3 = new AmazonS3Client(credentialsProvider, clientConfiguration);
-            Region region = Region.fromLocationConstraint(this.amazonS3.getBucketLocation(this.bucketName));
-            this.amazonS3.setEndpoint(region.getEndpoint());
+            AmazonS3ClientBuilder amazonS3ClientBuilder = AmazonS3ClientBuilder.standard()
+                    .withCredentials(new AuthenticationInfoAWSCredentialsProvider(authenticationInfo))
+                    .withClientConfiguration(S3Utils.getClientConfiguration(proxyInfoProvider));
+
+            String bucketRegion = amazonS3ClientBuilder.build()
+                    .headBucket(new HeadBucketRequest(this.bucketName))
+                    .getBucketRegion();
+
+            this.amazonS3 = amazonS3ClientBuilder.withRegion(bucketRegion).build();
         }
     }
 
