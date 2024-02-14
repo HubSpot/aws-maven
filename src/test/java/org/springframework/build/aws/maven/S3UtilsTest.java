@@ -16,16 +16,14 @@
 
 package org.springframework.build.aws.maven;
 
-import com.amazonaws.ClientConfiguration;
 import org.apache.maven.wagon.proxy.ProxyInfo;
 import org.apache.maven.wagon.proxy.ProxyInfoProvider;
 import org.apache.maven.wagon.repository.Repository;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import software.amazon.awssdk.regions.Region;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public final class S3UtilsTest {
 
@@ -37,45 +35,48 @@ public final class S3UtilsTest {
 
     @Test
     public void getBucketName() {
-        assertEquals("dist.springsource.com", S3Utils.getBucketName(createRepository("/")));
+        assertThat(S3Utils.getS3Uri(createRepository("/")).bucket())
+                .hasValue("dist.springsource.com");
+
+        assertThat(S3Utils.getS3Uri(createRepository("my-bucket", "/artifacts/snapshots")).bucket())
+                .hasValue("my-bucket");
+        assertThat(S3Utils.getS3Uri(createRepository("my-bucket.s3.us-west-2.amazonaws.com", "/artifacts/snapshots")).bucket())
+                .hasValue("my-bucket");
+    }
+
+    @Test
+    public void getBucketRegion() {
+        assertThat(S3Utils.getS3Uri(createRepository("/")).region()).isEmpty();
+
+        assertThat(S3Utils.getS3Uri(createRepository("my-bucket", "/artifacts/snapshots")).region())
+                .isEmpty();
+        assertThat(S3Utils.getS3Uri(createRepository("my-bucket.s3.us-west-2.amazonaws.com", "/artifacts/snapshots")).region())
+                .hasValue(Region.US_WEST_2);
     }
 
     @Test
     public void getBaseDirectory() {
-        assertEquals("", S3Utils.getBaseDirectory(createRepository("")));
-        assertEquals("", S3Utils.getBaseDirectory(createRepository("/")));
-        assertEquals("foo/", S3Utils.getBaseDirectory(createRepository("/foo")));
-        assertEquals("foo/", S3Utils.getBaseDirectory(createRepository("/foo/")));
-        assertEquals("foo/bar/", S3Utils.getBaseDirectory(createRepository("/foo/bar")));
-        assertEquals("foo/bar/", S3Utils.getBaseDirectory(createRepository("/foo/bar/")));
-    }
+        assertThat(S3Utils.getS3Uri(createRepository("")).key())
+                .hasValue("");
+        assertThat(S3Utils.getS3Uri(createRepository("/")).key())
+                .hasValue("");
 
-    @Test
-    public void getClientConfiguration() {
-        when(this.proxyInfoProvider.getProxyInfo("s3")).thenReturn(this.proxyInfo);
-        when(this.proxyInfo.getHost()).thenReturn("foo");
-        when(this.proxyInfo.getPort()).thenReturn(PORT);
+        assertThat(S3Utils.getS3Uri(createRepository("/foo")).key())
+                .hasValue("foo/");
+        assertThat(S3Utils.getS3Uri(createRepository("/foo/")).key())
+                .hasValue("foo/");
 
-        ClientConfiguration clientConfiguration = S3Utils.getClientConfiguration(this.proxyInfoProvider);
-        assertEquals("foo", clientConfiguration.getProxyHost());
-        assertEquals(100, clientConfiguration.getProxyPort());
-    }
-
-    @Test
-    public void getClientConfigurationNoProxyInfoProvider() {
-        ClientConfiguration clientConfiguration = S3Utils.getClientConfiguration(null);
-        assertNull(clientConfiguration.getProxyHost());
-        assertEquals(-1, clientConfiguration.getProxyPort());
-    }
-
-    @Test
-    public void getClientConfigurationNoProxyInfo() {
-        ClientConfiguration clientConfiguration = S3Utils.getClientConfiguration(this.proxyInfoProvider);
-        assertNull(clientConfiguration.getProxyHost());
-        assertEquals(-1, clientConfiguration.getProxyPort());
+        assertThat(S3Utils.getS3Uri(createRepository("/foo/bar")).key())
+                .hasValue("foo/bar/");
+        assertThat(S3Utils.getS3Uri(createRepository("/foo/bar/")).key())
+                .hasValue("foo/bar/");
     }
 
     private Repository createRepository(String path) {
-        return new Repository("foo", String.format("s3://dist.springsource.com%s", path));
+        return createRepository("dist.springsource.com", path);
+    }
+
+    private Repository createRepository(String host, String path) {
+        return new Repository("foo", String.format("s3://%s%s", host, path));
     }
 }

@@ -20,17 +20,17 @@ import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.events.TransferEvent;
 import org.apache.maven.wagon.events.TransferListener;
 import org.apache.maven.wagon.resource.Resource;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentMatchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.springframework.build.aws.maven.matchers.Matchers.eq;
+
 
 public final class StandardTransferListenerSupportTest {
 
@@ -44,7 +44,7 @@ public final class StandardTransferListenerSupportTest {
 
     private final TransferListenerSupport transferListenerSupport = new StandardTransferListenerSupport(this.wagon);
 
-    @Before
+    @BeforeEach
     public void addTransferListener() {
         this.transferListenerSupport.addTransferListener(this.transferListener);
     }
@@ -78,7 +78,7 @@ public final class StandardTransferListenerSupportTest {
         this.transferListenerSupport.fireTransferProgress(this.resource, REQUEST_TYPE, buffer, length);
         verify(this.transferListener).transferProgress(
                 eq(new TransferEvent(this.wagon, this.resource, TransferEvent.TRANSFER_PROGRESS, REQUEST_TYPE)),
-                ArgumentMatchers.eq(buffer), ArgumentMatchers.eq(length));
+                eq(buffer), eq(length));
     }
 
     @Test

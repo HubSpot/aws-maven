@@ -169,13 +169,11 @@ abstract class AbstractWagon implements Wagon {
     public final void get(String resourceName, File destination) throws TransferFailedException,
             ResourceDoesNotExistException, AuthorizationException {
         Resource resource = new Resource(resourceName);
-        this.transferListenerSupport.fireTransferInitiated(resource, TransferEvent.REQUEST_GET);
-        this.transferListenerSupport.fireTransferStarted(resource, TransferEvent.REQUEST_GET);
 
         try {
-            getResource(resourceName, destination, new StandardTransferProgress(resource, TransferEvent.REQUEST_GET,
+            this.transferListenerSupport.fireTransferInitiated(resource, TransferEvent.REQUEST_GET);
+            getResource(resourceName, destination, new WagonS3TransferListenerAdapter(resource, TransferEvent.REQUEST_GET,
                     this.transferListenerSupport));
-            this.transferListenerSupport.fireTransferCompleted(resource, TransferEvent.REQUEST_GET);
         } catch (TransferFailedException | ResourceDoesNotExistException | AuthorizationException e) {
             this.transferListenerSupport.fireTransferError(resource, TransferEvent.REQUEST_GET, e);
             throw e;
@@ -220,13 +218,12 @@ abstract class AbstractWagon implements Wagon {
     public final void put(File source, String destination) throws TransferFailedException,
             ResourceDoesNotExistException, AuthorizationException {
         Resource resource = new Resource(destination);
-        this.transferListenerSupport.fireTransferInitiated(resource, TransferEvent.REQUEST_PUT);
-        this.transferListenerSupport.fireTransferStarted(resource, TransferEvent.REQUEST_PUT);
 
         try {
-            putResource(source, destination, new StandardTransferProgress(resource, TransferEvent.REQUEST_PUT,
+            this.transferListenerSupport.fireTransferInitiated(resource, TransferEvent.REQUEST_PUT);
+            putResource(source, destination, new WagonS3TransferListenerAdapter(resource, TransferEvent.REQUEST_PUT,
                     this.transferListenerSupport));
-            this.transferListenerSupport.fireTransferCompleted(resource, TransferEvent.REQUEST_PUT);
+
         } catch (TransferFailedException | ResourceDoesNotExistException | AuthorizationException e) {
             this.transferListenerSupport.fireTransferError(resource, TransferEvent.REQUEST_PUT, e);
             throw e;
@@ -288,7 +285,7 @@ abstract class AbstractWagon implements Wagon {
 
     protected abstract void disconnectFromRepository() throws ConnectionException;
 
-    protected abstract void getResource(String resourceName, File destination, TransferProgress transferProgress)
+    protected abstract void getResource(String resourceName, File destination, WagonS3TransferListenerAdapter transferProgress)
             throws TransferFailedException, ResourceDoesNotExistException, AuthorizationException;
 
     protected abstract boolean isRemoteResourceNewer(String resourceName, long timestamp)
@@ -297,7 +294,7 @@ abstract class AbstractWagon implements Wagon {
     protected abstract List<String> listDirectory(String directory) throws TransferFailedException,
             ResourceDoesNotExistException, AuthorizationException;
 
-    protected abstract void putResource(File source, String destination, TransferProgress transferProgress)
+    protected abstract void putResource(File source, String destination, WagonS3TransferListenerAdapter transferProgress)
             throws TransferFailedException, ResourceDoesNotExistException, AuthorizationException;
 
 }

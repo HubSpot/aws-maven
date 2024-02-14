@@ -16,40 +16,44 @@
 
 package org.springframework.build.aws.maven;
 
-import com.amazonaws.ClientConfiguration;
-import org.apache.maven.wagon.proxy.ProxyInfo;
-import org.apache.maven.wagon.proxy.ProxyInfoProvider;
 import org.apache.maven.wagon.repository.Repository;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Uri;
+
+import java.net.URI;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 final class S3Utils {
+
+    private static final Pattern S3_VHOST_DOMAIN_PATTERN =
+            Pattern.compile("([\\w\\-]+)\\.s3\\.([\\w\\-]+)\\.amazonaws\\.com");
 
     private S3Utils() {
     }
 
-    static String getBucketName(Repository repository) {
-        return repository.getHost();
-    }
+    static S3Uri getS3Uri(Repository repository) {
+        S3Uri.Builder uri = S3Uri.builder()
+                .uri(URI.create(repository.getUrl()));
 
-    static String getBaseDirectory(Repository repository) {
+        Matcher hostMatcher = S3_VHOST_DOMAIN_PATTERN.matcher(repository.getHost());
+
+        if (hostMatcher.matches()) {
+            uri = uri.bucket(hostMatcher.group(1))
+                    .region(Region.of(hostMatcher.group(2)));
+        } else {
+            uri = uri.bucket(repository.getHost());
+        }
+
         StringBuilder sb = new StringBuilder(repository.getBasedir()).deleteCharAt(0);
 
         if ((sb.length() != 0) && (sb.charAt(sb.length() - 1) != '/')) {
             sb.append('/');
         }
 
-        return sb.toString();
+        uri = uri.key(sb.toString());
+
+        return uri.build();
     }
 
-    static ClientConfiguration getClientConfiguration(ProxyInfoProvider proxyInfoProvider) {
-        ClientConfiguration clientConfiguration = new ClientConfiguration();
-
-        if (proxyInfoProvider != null) {
-            ProxyInfo proxyInfo = proxyInfoProvider.getProxyInfo("s3");
-            if (proxyInfo != null) {
-                clientConfiguration.withProxyHost(proxyInfo.getHost()).withProxyPort(proxyInfo.getPort());
-            }
-        }
-
-        return clientConfiguration;
-    }
 }
