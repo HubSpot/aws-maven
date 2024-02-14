@@ -5,6 +5,8 @@ import org.apache.maven.wagon.TransferFailedException;
 import org.apache.maven.wagon.authorization.AuthorizationException;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 
+import java.util.concurrent.CompletionException;
+
 class AwsV2ClientExceptions {
 
     public static RuntimeException propagateForRead(
@@ -32,24 +34,34 @@ class AwsV2ClientExceptions {
             Throwable amazonClientException, String errorMessageTemplate,
             String s3Key
     ) throws AuthorizationException, ResourceDoesNotExistException, TransferFailedException {
-        if (!(amazonClientException instanceof AwsServiceException)) {
+        Throwable unwrapped = unwrapCompletionException(amazonClientException);
+
+        if (!(unwrapped instanceof AwsServiceException)) {
             throw new TransferFailedException(
                     String.format(errorMessageTemplate, s3Key),
-                    amazonClientException);
+                    unwrapped);
         }
-        switch (((AwsServiceException) amazonClientException).statusCode()) {
+        switch (((AwsServiceException) unwrapped).statusCode()) {
             case 403:
                 throw new AuthorizationException(
                         String.format(errorMessageTemplate, s3Key),
-                        amazonClientException);
+                        unwrapped);
             case 404:
                 throw new ResourceDoesNotExistException(
                         String.format("'%s' does not exist", s3Key),
-                        amazonClientException);
+                        unwrapped);
             default:
                 throw new TransferFailedException(
                         String.format(errorMessageTemplate, s3Key),
-                        amazonClientException);
+                        unwrapped);
+        }
+    }
+
+    private static Throwable unwrapCompletionException(Throwable t) {
+        if (t instanceof CompletionException) {
+            return t.getCause();
+        } else {
+            return t;
         }
     }
 
