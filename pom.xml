@@ -208,6 +208,12 @@
                                 <relocation>
                                     <pattern>software.amazon</pattern>
                                     <shadedPattern>aws_wagon.shaded.software.amazon</shadedPattern>
+                                    <includes>
+                                        <include>software.amazon.*</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>software.amazon.awssdk.crt.*</exclude>
+                                    </excludes>
                                 </relocation>
                             </relocations>
                         </configuration>
