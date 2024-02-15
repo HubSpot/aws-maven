@@ -25,12 +25,10 @@ class WagonS3TransferListenerAdapter implements TransferListener {
 
     @Override
     public void bytesTransferred(Context.BytesTransferred context) {
-        byte[] buffer = new byte[0];
-        int length = 0;
+    }
 
-        context.progressSnapshot().transferredBytes();
-
-        transferListenerSupport.fireTransferProgress(resource, requestType, buffer, length);
+    public void notify(byte[] b, int len) {
+        transferListenerSupport.fireTransferProgress(resource, requestType, b, len);
     }
 
     @Override

@@ -24,6 +24,8 @@ import org.apache.maven.wagon.authorization.AuthorizationException;
 import org.apache.maven.wagon.proxy.ProxyInfo;
 import org.apache.maven.wagon.proxy.ProxyInfoProvider;
 import org.apache.maven.wagon.repository.Repository;
+import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.core.async.BlockingInputStreamAsyncRequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Uri;
@@ -36,10 +38,11 @@ import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
+import software.amazon.awssdk.transfer.s3.model.CompletedUpload;
 import software.amazon.awssdk.transfer.s3.model.DownloadFileRequest;
-import software.amazon.awssdk.transfer.s3.model.UploadFileRequest;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -217,14 +220,18 @@ public class SimpleStorageServiceWagon extends AbstractWagon {
         String key = getKey(destination);
 
         try {
-            transferManager.uploadFile(UploadFileRequest.builder()
-                            .putObjectRequest(b -> b.bucket(this.bucketName)
-                                    .key(key))
-                            .addTransferListener(transferProgress)
-                            .source(source)
-                            .build())
-                    .completionFuture()
-                    .join();
+            BlockingInputStreamAsyncRequestBody body = AsyncRequestBody.forBlockingInputStream(source.length());
+
+            CompletableFuture<CompletedUpload> future = transferManager.upload(b ->
+                            b.requestBody(body)
+                                    .putObjectRequest(req -> req.bucket(this.bucketName).key(key))
+                                    .addTransferListener(transferProgress))
+                    .completionFuture();
+
+            body.writeInputStream(
+                    new TransferProgressFileInputStream(
+                            Files.newInputStream(source.toPath()), transferProgress));
+            future.join();
         } catch (Exception e) {
             throw AwsV2ClientExceptions.propagateForWrite(e, destination);
         }
